@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { Property,Category } = require('../models/Property'); // Ensure correct import
+const { Property, Category } = require('../models/Property'); // Ensure correct import
 const mongoose = require('mongoose');
 const verifyToken = require('./verifyToken');
 
-router.post('/properties',verifyToken,async (req, res) => {
+
+router.post('/properties', verifyToken, async (req, res) => {
     const { title, description, price, location, type, buildYear, size, lotSize, amenities, images, mapLocation, reviews, category } = req.body;
 
     try {
@@ -72,16 +73,16 @@ router.get('/properties/:id', async (req, res) => {
 
 router.get('/properties/:id/related', async (req, res) => {
     try {
-      const property = await Property.findById(req.params.id).populate('category');
-      const relatedProperties = await Property.find({
-        category: property.category._id,
-        _id: { $ne: property._id }
-      }).limit(3); // Fetch 3 related properties excluding the current one
-      res.json(relatedProperties);
+        const property = await Property.findById(req.params.id).populate('category');
+        const relatedProperties = await Property.find({
+            category: property.category._id,
+            _id: { $ne: property._id }
+        }).limit(3); // Fetch 3 related properties excluding the current one
+        res.json(relatedProperties);
     } catch (error) {
-      res.status(500).json({ error: 'Error fetching related properties' });
+        res.status(500).json({ error: 'Error fetching related properties' });
     }
-  });
+});
 
 
 router.put('/properties/:id', verifyToken, async (req, res) => {
@@ -121,7 +122,7 @@ router.delete('/properties/:id', verifyToken, async (req, res) => {
     }
 });
 
-router.get("/category",async(req,res)=>{
+router.get("/category", async (req, res) => {
     const { category } = req.query;
     try {
         // Ensure category is provided and valid
@@ -134,6 +135,21 @@ router.get("/category",async(req,res)=>{
         res.json(properties);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching properties' });
+    }
+})
+
+
+//Property and USer route for Dashboard
+
+router.get("/properties/user/:userId", async (req, res) => {
+    const userId = req.params.userId;
+    try {
+        //Find propertues by the specific user
+        const userProperties = await Property.find({ user: userId });
+        res.status(200).json(userProperties)
+    } catch (error) {
+        console.error('Error fetching user Properties:', error);
+        res.status(500).json({ error: 'Server error Fetching user properties ' });
     }
 })
 

@@ -45,4 +45,15 @@ router.get('/categories/:id', async(req,res)=>{
     }
 })
 
+// Fetch properties by category ID
+router.get('/properties/category/:categoryId', async (req, res) => {
+    try {
+      const properties = await Property.find({ category: req.params.categoryId });
+      res.json(properties);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+  
+
 module.exports = router;

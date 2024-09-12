@@ -3,8 +3,9 @@ const User = require("../models/User");
 const { regValidation } = require("./validation")
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer')
-// const verifyToken = require('./verifyToken')
+const nodemailer = require('nodemailer');
+const verifyToken = require('./verifyToken');
+const { Property } = require("../models/Property");
 require('dotenv').config();
 
 router.post('/register', async (req, res) => {
@@ -22,8 +23,7 @@ router.post('/register', async (req, res) => {
     const user = new User({
         name,
         email,
-        password: hash,
-        address
+        password: hash
     })
 
     try {
@@ -40,17 +40,25 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
-    const findedUser = await User.findOne({ email: email })
+    // Find the user by email
+    const findedUser = await User.findOne({ email: email });
     if (!findedUser) return res.status(400).send("Email Incorrect");
 
+    // Compare the provided password with the hashed password in the database
     const compare = await bcrypt.compare(password, findedUser.password);
     if (!compare) return res.status(400).send("Password Incorrect");
 
-    const token = jwt.sign({ email: findedUser.email },process.env.TOKEN_SECRET)
-    res.header('token', token).send();
-    
+    // Sign the JWT token with the user's id and email
+    const token = jwt.sign(
+        { id: findedUser._id, email: findedUser.email },  // Include user id here
+        process.env.TOKEN_SECRET,
+        { expiresIn: '1h' }  // Optional: token expiration time
+    );
 
-})
+    // Return the token in the response header and body
+    res.header('token', token).send({ token });
+});
+
 
 
 router.post('/forget-password', async (req, res) => {
@@ -68,28 +76,34 @@ router.post('/forget-password', async (req, res) => {
         await user.save();
 
         const transporter = nodemailer.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
+            service:"gmail",
+            host: 'smtp.gmail.com',
+            // port: 587,
             auth: {
-                user: 'alvena88@ethereal.email',
-                pass: '4p8umPBq2heJ4bYVWE'
+                user: process.env.EMAIL,
+                pass: process.env.APP_PASSWORD
             }
         });
 
         const mailOptions = {
             to: user.email,
-            from:"alvena88@ethereal.email",
-            subject: "Password Reset",
-            text: `Please click on the following link, or paste it into your browser to complete the process:\n\n
-            http://localhost:3000/reset-password/${token}\n\n
+            from: {
+                name: 'Real Estate Listing Site',
+                email: "info@luxusrealestate.com"
+            },
+            subject: 'Password Reset',
+            text: `This Email is Sent by Real Estate Listing Site
+            Please click on the following link, or paste it into your browser to complete the process:\n\n
+            https://localhost:3000/reset-password/${token}\n\n
             If you did not request this, please ignore this email and your password will remain unchanged.\n`
-        }
+        };
 
         transporter.sendMail(mailOptions, (err, response) => {
             if (err) {
-                console.error('There was an error: ', err);
+                console.error('Error in sending email:', err); // Log detailed error
                 return res.status(500).send('Error in sending email');
             }
+            console.log('Email sent successfully to:', user.email);
             res.status(200).send('Recovery email sent');
         });
     } catch (err) {
@@ -137,5 +151,16 @@ router.post('/reset-password/:token', async (req, res) => {
         res.status(500).send('Error on the server');
     }
 });
+
+router.get('/users/:userId', async (req, res) => {
+    const { userId } = req.params;
+    const user = await Property.find(userId);
+    
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  });
 
 module.exports = router;
