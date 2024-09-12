@@ -27,8 +27,8 @@ const Categories = () => {
       <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4'>
         {categories.length > 0 ? (
           categories.map((category, index) => (
-            <Link to={`/category/${category._id}`} key={index}>
-              <div className="bg-transparent shadow-md rounded-md p-4 items-center">
+              <Link to={`/category/${category._id}`} key={index}>
+            <div className="bg-transparent shadow-md rounded-md p-4 items-center">
                 <img
                   src={category.images}
                   className='h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 lg:h-32 lg:w-32 mx-auto rounded-sm'

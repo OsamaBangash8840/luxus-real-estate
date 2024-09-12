@@ -14,46 +14,85 @@ const AddProperty = () => {
   const [size, setSize] = useState('');
   const [lotSize, setLotSize] = useState('');
   const [amenities, setAmenities] = useState('');
-  const [images, setImages] = useState('');
+  const [images, setImages] = useState([]);
   const [mapLocation, setMapLocation] = useState('');
   const [category, setCategory] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    axios.post('http://localhost:8000/api/properties', {
-      title,
-      description,
-      price,
-      location,
-      buildYear,
-      size,
-      lotSize,
-      amenities,
-      images,
-      mapLocation,
-      category  // Ensure category matches exactly with one of the enum values in backend
-    })
-      .then(res => {
-        if (res.data) {
-          toast.success(`Property "${res.data.title}" is successfully registered`, { autoClose: 8000 });
-          navigate('/');
-        } else {
-          toast.error("Unexpected request response");
-        }
-      })
-      .catch(err => {
-        console.error('Error:', err);
-        const message = err.response ? err.response.data : 'An error occurred';
-        setErrorMessage(typeof message === 'string' ? message : JSON.stringify(message));
-      });
+  const handleImageUpload = async (files) => {
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      formData.append('files', files[i]);
+    }
+  
+    try {
+      const res = await axios.post('http://localhost:8000/api/upload', formData);
+      const uploadedImageUrls = res.data.map(file => file.imageUrl);
+      return uploadedImageUrls; // Return URLs
+    } catch (err) {
+      console.error('Image upload failed:', err);
+      toast.error('Image upload failed');
+      throw err; // Throw to handle in calling function
+    }
   };
+  
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    if (!token) return toast.error("You have to log in first");
+  
+    try {
+      // First, upload images and get their URLs
+      const imageFiles = document.querySelector('input[type="file"]').files;
+      const uploadedImages = await handleImageUpload(imageFiles);
+  
+      const propertyData = {
+        title,
+        description,
+        price,
+        location,
+        buildYear,
+        size,
+        lotSize,
+        amenities,
+        images: uploadedImages, // Corrected to use the returned URLs
+        mapLocation,
+        category,
+      };
+  
+      const res = await axios.post(
+        'http://localhost:8000/api/properties',
+        propertyData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      if (res.data) {
+        toast.success(`Property "${res.data.title}" is successfully registered`, { autoClose: 8000 });
+        navigate('/');
+      } else {
+        toast.error("Unexpected request response");
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      const message = err.response ? err.response.data : 'An error occurred';
+      setErrorMessage(typeof message === 'string' ? message : JSON.stringify(message));
+    }
+  };
+  
+
+  const handleImageChange = (e) => {
+    setImages(e.target.files); // Directly store the FileList object
+  };
+
 
   return (
     <>
       <Navbar />
       <div className="w-full max-w-screen-lg mx-auto">
-      <h1 className=' text-2xl '>Add a Property</h1>
+        <h1 className='text-2xl'>Add a Property</h1>
         <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="title">
@@ -164,7 +203,6 @@ const AddProperty = () => {
               <textarea
                 className="shadow appearance-none border rounded w-full py-3 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 id="amenities"
-                type="text"
                 placeholder="E.g., Swimming Pool, Gym, Parking"
                 value={amenities}
                 onChange={(e) => setAmenities(e.target.value)}
@@ -196,8 +234,8 @@ const AddProperty = () => {
               type="file"
               name="images"
               placeholder="Drop Images"
-              onChange={(e) => setImages(e.target.files)}
-              multiple  // Allow multiple file selection
+              onChange={handleImageChange}
+              multiple
               required
             />
           </div>

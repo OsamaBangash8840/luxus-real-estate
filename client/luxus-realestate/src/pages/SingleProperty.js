@@ -108,14 +108,17 @@ const SingleProperty = () => {
                     </div>
                 </div> */}
 
-                {/* Property Map */}
-                {/* Property Map */}
-        <div className="bg-white p-4 rounded-lg shadow-md mt-4">
-          <h2 className="text-2xl font-bold mb-2">Property Map</h2>
-          <div className="aspect-w-16 aspect-h-9 mb-4" style={{ height: '400px' }}>
-            <MapComponent lat={property.mapLocation.lat} lng={property.mapLocation.lng} />
-          </div>
-        </div>
+           {/* Property Map */}
+           <div className="bg-white p-4 rounded-lg shadow-md mt-4">
+                <h2 className="text-2xl font-bold mb-2">Property Map</h2>
+                {property.mapLocation && property.mapLocation.lat && property.mapLocation.lng ? (
+                    <div className="aspect-w-16 aspect-h-9 mb-4" style={{ height: '400px' }}>
+                        <MapComponent lat={property.mapLocation.lat} lng={property.mapLocation.lng} />
+                    </div>
+                ) : (
+                    <div>Loading Map...</div>  // Placeholder for loading state
+                )}
+            </div>
 
                 {/*  */}
               <SubmitTour/>

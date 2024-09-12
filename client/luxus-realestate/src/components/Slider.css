@@ -1,0 +1,25 @@
+.carousel-item {
+    position: relative;
+  }
+  
+  .carousel-item img {
+    width: 100%;
+    height: 600px; /* Keep existing height */
+    object-fit: cover; /* Ensure image covers the area */
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay, adjust color and opacity as needed */
+    z-index: 1;
+  }
+  
+  .carousel-caption {
+    position: relative;
+    z-index: 2; /* Ensure caption is above the overlay */
+  }
+  
