@@ -27,6 +27,11 @@ app.use('/api', categoryRoutes);
 app.use('/api', tourRoutes);
 app.use('/api', reviewRoute);
 
+
+app.get('/', (req, res) => {
+  res.send('Hello, world!');
+});
+
 // Multer setup for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
