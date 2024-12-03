@@ -11,6 +11,7 @@ const categorySchema = new mongoose.Schema({
 });
 
 const propertySchema = new mongoose.Schema({
+    owner:{type:mongoose.Schema.Types.ObjectId,ref:"User"},
     title: String,
     description: String,
     price: Number,
@@ -34,11 +35,6 @@ const propertySchema = new mongoose.Schema({
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',
-        required: true
-    },
-    user:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
         required: true
     }
 });

@@ -13,6 +13,7 @@ import Dashboard from "./components/Dashboard/Dashboard";
 
 
 const App = () => {
+
   return (
     <div className="App">
       <Router>
@@ -26,7 +27,7 @@ const App = () => {
           <Route path="/category/:id" element={<CategoryProperties />} />
           <Route path="/category/:id" element={<CategoryProperties />} />
           <Route path="/category-detail/:id" element={<CategoryDetail />} />
-          <Route path="/dashboard" element={<Dashboard/>}/>
+          <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </Router>
     </div>

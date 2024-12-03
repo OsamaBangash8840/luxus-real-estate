@@ -4,7 +4,7 @@ import Navbar from '../Navbar';
 import Metrics from './Metrics';
 import PropertyCard from './PropertyCard';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode'; // Import jwt-decode
+// jwtDecode was commented out, removing it since it's not used
 
 const Dashboard = () => {
   const [userData, setUserData] = useState(null); // To store user data
@@ -21,25 +21,13 @@ const Dashboard = () => {
           throw new Error('No token found');
         }
 
-        // Decode the token to get the user ID
-        const decodedToken = jwtDecode(token);
-        const userId = decodedToken.id; // Assuming the token contains `id` as the user ID
-        console.log(decodedToken);
-        // Fetch user information
-        const userResponse = await axios.get(`/api/users/${userId}`, {
+        // Fetch user properties from the backend
+        const userResponse = await axios.get(`http://localhost:8000/api/dashboard`, {
           headers: {
             Authorization: `Bearer ${token}` // Pass the token in headers
           }
         });
-        setUserData(userResponse.data);
-
-        // Fetch properties uploaded by the user
-        const propertyResponse = await axios.get(`/api/properties/user/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}` // Pass the token in headers
-          }
-        });
-        setUserProperties(propertyResponse.data);
+        setUserProperties(userResponse.data); // Set user properties
       } catch (error) {
         console.error('Error fetching user or property data:', error);
         setError(error.message); // Set error message
@@ -51,12 +39,14 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
+  // Display loading spinner or text while data is being fetched
   if (loading) {
-    return <div>Loading...</div>; // Display while loading
+    return <div>Loading...</div>;
   }
 
+  // Display error message if an error occurs
   if (error) {
-    return <div>Error: {error}</div>; // Display error message
+    return <div>Error: {error}</div>;
   }
 
   return (
@@ -65,10 +55,16 @@ const Dashboard = () => {
       <div className="flex-1 flex flex-col">
         <Navbar />
         <main className="p-6 space-y-6">
-          <Metrics userProperties={userProperties} profileViews={userData.profileViews} bookmarks={userData.bookmarks} />
+          {/* Pass user properties and any other metrics to the Metrics component */}
+          <Metrics 
+            userProperties={userProperties} 
+            profileViews={userData?.profileViews || 0} 
+            bookmarks={userData?.bookmarks || 0} 
+          />
           <div>
             <h2 className="text-2xl font-semibold mb-4">Your Properties</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Render property cards */}
               {userProperties.map((property) => (
                 <PropertyCard
                   key={property._id}

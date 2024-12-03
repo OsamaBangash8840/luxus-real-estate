@@ -50,7 +50,7 @@ router.post('/login', async (req, res) => {
 
     // Sign the JWT token with the user's id and email
     const token = jwt.sign(
-        { id: findedUser._id, email: findedUser.email },  // Include user id here
+        { id: findedUser._id},  // Include user id here
         process.env.TOKEN_SECRET,
         { expiresIn: '1h' }  // Optional: token expiration time
     );
@@ -152,15 +152,15 @@ router.post('/reset-password/:token', async (req, res) => {
     }
 });
 
-router.get('/users/:userId', async (req, res) => {
-    const { userId } = req.params;
-    const user = await Property.find(userId);
-    
-    if (user) {
-      res.json(user);
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
+router.get('/dashboard',verifyToken, async (req, res) => {
+   try {
+    const properties = await Property.find({owner:req.user.userId});
+    res.json(properties);
+   } catch (error) {
+    res.status(400).json({
+        "message":"Error in fetching data"
+    })
+   }
   });
 
 module.exports = router;
